@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html  lang="en" >
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./web3.1.js"></script>
+</head>
+<body>
+	
+	<div>
+		<p style="color:red">查询余额</p>
+		<p>钱包地址:</p>
+		<input type="text" id="address"/> <button id="query">query</button>
+		<p>eth balance: <span id="addressEth"></span></p>
+		<p>mfc balance: <span id="addressMfc"></span></p>
+	</div>
+	<hr>
+	<div>
+		<p style="color:red">提现</p>
+		<p>Send MFC Tokens</p>
+		<p>提现地址:</p>
+		<input type="text" id="reciver"/>
+		<p>提现数量:</p>
+		<input type="text" id="amount"/>
+		<button id="send">send</button>
+	</div>
+	<hr>
+	<div>
+		<p>生成钱包地址：<input type="text" id="password"/><button id="generate">Generate</button></p>
+		<p>钱包地址：</p>
+		<p id="gAddress"></p>
+		<p id="gPubkey"></p>
+		<p id="gPrikey"></p>
+	</div>
+	<hr>
+	<div>
+		<p style="color:red">账户之间转账：</p>
+		<p>From address:  0x0001b895e04075c4ad89a4ff4f4c4b9d85f8be1f</p>
+		
+		<p>MFC Amount:</p>
+		<p>
+			<input type="text" id="mAmount">
+		</p>
+		<p>
+			To address:
+		</p>
+		<p>
+			<input type="text" id="mTo">
+		</p>
+		<p>
+			<button id="mSend">发送</button>
+		</p>
+	</div>
+	<hr>
+	<div>
+		<p style="color:red">给其他地址充 1 ether:</p>
+		<p><input type="text" id="etherAdress"><button id="withdraw">Send</button></p>
+	</div>
+	<script>
+		if (typeof web3 !== 'undefined') {
+		  web3 = new Web3(web3.currentProvider);
+		} else {
+		  // set the provider you want from Web3.providers
+		  web3 = new Web3('http://localhost:8545');
+		}
+		
+		// token 合约的地址
+		var contractAddress = '0x309adc8ec6bf8e955e2893cd232d9603385c8c45';
+		// token 合约的 abi信息
+		var contract = new web3.eth.Contract([
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "version",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_owner",
+				"type": "address"
+			},
+			{
+				"name": "_spender",
+				"type": "address"
+			}
+		],
+		"name": "allowance",
+		"outputs": [
+			{
+				"name": "remaining",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "totalSupply",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "symbol",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "name",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_owner",
+				"type": "address"
+			}
+		],
+		"name": "balanceOf",
+		"outputs": [
+			{
+				"name": "balance",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "decimals",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"name": "_initialAmount",
+				"type": "uint256"
+			},
+			{
+				"name": "_tokenName",
+				"type": "string"
+			},
+			{
+				"name": "_decimalUnits",
+				"type": "uint8"
+			},
+			{
+				"name": "_tokenSymbol",
+				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"name": "_owner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"name": "_spender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "_value",
+				"type": "uint256"
+			}
+		],
+		"name": "Approval",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"name": "_from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"name": "_to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "_value",
+				"type": "uint256"
+			}
+		],
+		"name": "Transfer",
+		"type": "event"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_to",
+				"type": "address"
+			},
+			{
+				"name": "_value",
+				"type": "uint256"
+			}
+		],
+		"name": "transfer",
+		"outputs": [
+			{
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_spender",
+				"type": "address"
+			},
+			{
+				"name": "_value",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [
+			{
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_spender",
+				"type": "address"
+			},
+			{
+				"name": "_value",
+				"type": "uint256"
+			},
+			{
+				"name": "_extraData",
+				"type": "bytes"
+			}
+		],
+		"name": "approveAndCall",
+		"outputs": [
+			{
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "fallback"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_from",
+				"type": "address"
+			},
+			{
+				"name": "_to",
+				"type": "address"
+			},
+			{
+				"name": "_value",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [
+			{
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+], contractAddress, {
+	from : '0x852990e0b0f56ff7ce92b214d401416ff98785ff'
+});  // 此处 from 指定 交易发送方
+
+		var query = document.getElementById('query');
+		var eth = document.getElementById('addressEth');
+		var mfc = document.getElementById('addressMfc');
+
+		query.addEventListener('click', function(){
+			var address = document.getElementById('address').value;
+			if(!web3.utils.isAddress(address)){
+				alert("Invalid address!");
+				return ;
+			}
+			web3.eth.getBalance(address, function(err, resp){
+				if(!err){
+					eth.innerHTML = web3.utils.fromWei(resp, 'ether');
+				}else{
+					console.log(err);
+				}
+
+			});
+			contract.methods.balanceOf(address).call(function(err, tkns){
+		        if (!err) {
+		          mfc.innerHTML = web3.utils.fromWei(tkns, 'ether');
+		        }else{
+		        	console.log(err)
+		        }
+		        
+	      	})
+			
+		})
+
+		var send = document.getElementById('send');
+		send.addEventListener('click', function(){
+			var reciver = document.getElementById('reciver').value;
+			var amount = document.getElementById('amount').value;
+			if(!web3.utils.isAddress(reciver)){
+				alert("reciver: Invalid address!");
+				return ;
+			}
+			contract.methods.transfer(reciver, web3.utils.toWei(amount)).send(function(err, resp){
+				if(!err){
+					console.log(resp);
+					alert('success');
+				}else{
+					console.log(err);
+				}
+			})
+		});
+
+		var generate = document.getElementById('generate');
+		generate.addEventListener('click', function(){
+			var password = document.getElementById('password').value;
+			//var wallet = ethereumjs.Wallet.generate(password);
+			var account = web3.eth.accounts.create(password);
+			document.getElementById('gPrikey').innerHTML = "private key:" + account.privateKey;
+		
+			document.getElementById('gAddress').innerHTML = "address:" + account.address;
+		});
+
+		var mSend = document.getElementById('mSend');
+		mSend.addEventListener('click', function(){
+			var from = '0x0001b895e04075c4ad89a4ff4f4c4b9d85f8be1f';
+			var amount = document.getElementById('mAmount').value;
+			var to = document.getElementById('mTo').value;
+			
+			if(!web3.utils.isAddress(to)){
+				alert("Invalid to address");
+				return ;
+			}
+
+			web3.eth.getTransactionCount(from, function(err, count){
+				if(!err){
+					var tcount = count;
+					contract.methods.balanceOf(from).call( function(err, tkns){
+				        if (!err) {
+				           var balance = web3.utils.fromWei(tkns, 'ether');
+						   var b = new web3.utils.BN(balance)
+				           if(b.toNumber() < amount){
+				           		alert('You do not get enough mfc token!');
+				           		return ;
+				           }
+				           amount = web3.utils.toWei(amount);
+				           var rawTransaction = {
+						      "from": from,
+						      "nonce": "0x" + tcount.toString(16),
+						      "gasPrice": "0x003B9ACA00",
+						      "gasLimit": "0x250CA",
+						      "to": contractAddress,
+						      "value": "0x0",
+						      "data": contract.methods.transfer(to, amount).encodeABI()
+						  };
+						  var privKey = '0xa3d5d6a604cbfba78696c29705c8700f9626dddddea4f6b0037d05ae491527bf';
+						  
+						 web3.eth.accounts.signTransaction(rawTransaction, privKey, function(err,signed){
+							if(err){
+								console.log(err);
+								return ;
+							}
+							web3.eth.sendSignedTransaction(signed.rawTransaction, function(err, result){
+								if(!err){
+									console.log(result);
+								}else{
+									console.log(err);
+								}
+							})
+						 })
+				        }else{
+				        	console.log(err)
+				        }
+				        
+			      	})
+				}else{
+					console.log(error);
+				}
+				
+				
+			});
+
+		})
+
+		var withdraw = document.getElementById('withdraw');
+		web3.eth.defaultAccount= '0x852990e0b0f56ff7ce92b214d401416ff98785ff';
+		withdraw.addEventListener('click', function(){
+			var etherAdress = document.getElementById('etherAdress').value;
+			if(!web3.utils.isAddress(etherAdress)){
+				alert('Invalid address');
+				return ;
+			}
+			web3.eth.sendTransaction({
+			    to: etherAdress,
+			    value: '1000000000000000000'
+			},function(err, result){
+				if(!err){
+					console.log(result);
+				}else{
+					console.log(err);
+				}
+			})
+		})
+	</script>
+</body>
+<!-- 
+
+0x0001b895e04075c4ad89a4ff4f4c4b9d85f8be1f
+0xa3d5d6a604cbfba78696c29705c8700f9626dddddea4f6b0037d05ae491527bf
+
+0x38e9d6b58e3e83cb0512721cfb2360e48ad199b4
+
+0x5Ee41A8BE822737EB07DdCE1763D5Cf6405BC8F8
+ -->
+</html>
