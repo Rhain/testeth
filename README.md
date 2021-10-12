@@ -9,3 +9,14 @@ ganache 使用方法参考官方文档。
 ganache启动后会默认创建10个账户，使用了第一个账户
 
 然后你可以愉快的玩耍了。
+
+
+```js
+console.log(1)
+console.log(1)
+console.log(1)
+console.log(1)
+console.log(1)
+console.log(1)
+console.log(1)
+```
